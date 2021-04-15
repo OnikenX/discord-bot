@@ -1,11 +1,13 @@
 # WaLLE
 
 import discord
+from discord.ext.commands import Context
 from discord.ext import commands, tasks
 import os
 from dotenv import load_dotenv
 import youtube_dl
 import random
+import asyncio
 
 load_dotenv()
 # Get the API token from the .env file.
@@ -24,6 +26,7 @@ ytdl_format_options = {
     "format": "bestaudio/best",
     "restrictfilenames": True,
     "noplaylist": True,
+    "outtmpl": music_folder+'%(extractor)s-%(id)s-%(title)s.%(ext)s',
     "nocheckcertificate": True,
     "ignoreerrors": False,
     "logtostderr": False,
@@ -36,6 +39,8 @@ ytdl_format_options = {
 ffmpeg_options = {"options": "-vn"}
 
 ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
+
+
 
 class YTDLSource(discord.PCMVolumeTransformer):
     def __init__(self, source, *, data, volume=0.5):
@@ -57,22 +62,19 @@ class YTDLSource(discord.PCMVolumeTransformer):
         return filename
 
 @bot.command(name="cona")
-async def cona(ctx):
+async def cona(ctx : Context):
     await ctx.send(
         "Eu só quero {} 😳".format(ctx.author.name)
     )
 
 @bot.command(name="play", help="To play song")
-async def play(ctx, url):
-
+async def play(ctx : Context , url):
     if not ctx.message.author.voice:
         await ctx.send(
             "{} is not connected to a voice channel".format(ctx.message.author.name)
         )
         return
-
     # connecting to the channel
-
     channel = ctx.message.author.voice.channel
     try:
         await channel.connect()
@@ -86,27 +88,14 @@ async def play(ctx, url):
         async with ctx.typing():
             filename = await YTDLSource.from_url(url, loop=bot.loop)
             voice_channel.play(
-                discord.FFmpegPCMAudio(executable="ffmpeg", source=filename)
+                discord.FFmpegPCMAudio(executable="ffmpeg", source=filename), after
             )
         await ctx.send("**Now playing:** {}".format(filename))
-    except(e):
+    except:
         await ctx.send("The bot is not connected to a voice channel.")
 
-
-# @bot.command(name="join", help="Tells the bot to join the voice channel")
-# async def join(ctx):
-#     if not ctx.message.author.voice:
-#         await ctx.send(
-#             "{} is not connected to a voice channel".format(ctx.message.author.name)
-#         )
-#         return
-#     else:
-#         channel = ctx.message.author.voice.channel
-#     await channel.connect()
-
-
 @bot.command(name="pause", help="This command pauses the song")
-async def pause(ctx):
+async def pause(ctx : Context):
     voice_client = ctx.message.guild.voice_client
     if voice_client.is_playing():
         await voice_client.pause()
@@ -115,7 +104,7 @@ async def pause(ctx):
 
 
 @bot.command(name="resume", help="Resumes the song")
-async def resume(ctx):
+async def resume(ctx : Context):
     voice_client = ctx.message.guild.voice_client
     if voice_client.is_paused():
         await voice_client.resume()
@@ -126,7 +115,8 @@ async def resume(ctx):
 
 
 @bot.command(name="leave", help="To make the bot leave the voice channel")
-async def leave(ctx):
+async def leave(ctx : Context):
+    
     voice_client = ctx.message.guild.voice_client
     if voice_client.is_connected():
         await voice_client.disconnect()
@@ -135,13 +125,12 @@ async def leave(ctx):
 
 
 @bot.command(name="stop", help="Stops the song")
-async def stop(ctx):
+async def stop(ctx : Context):
     voice_client = ctx.message.guild.voice_client
     if voice_client.is_playing():
         await voice_client.stop()
     else:
         await ctx.send("The bot is not playing anything at the moment.")
-
 
 @bot.event
 async def on_ready():
@@ -155,12 +144,12 @@ async def on_ready():
 
 
 @bot.command(help="Prints details of Author")
-async def whats_my_name(ctx):
+async def whats_my_name(ctx : Context):
     await ctx.send("Hello {}".format(ctx.author.name))
 
 
 @bot.command(help="Prints details of Server")
-async def where_am_i(ctx):
+async def where_am_i(ctx : Context):
     owner = str(ctx.guild.owner)
     region = str(ctx.guild.region)
     guild_id = str(ctx.guild.id)
@@ -207,22 +196,25 @@ async def on_member_join(member):
 
 
 @bot.command(name="battle", help="Battle with another user!")
-async def battle(ctx, mention : discord.Member):
-    i = random.randint(0,1000)
-    if i%2 == 0:
-        msg = "{} wins!!!".format(msg.author.name)
+async def battle(ctx : Context, mention : discord.Member):
+    if ctx.author.name == mention.display_name:
+        msg = "Don't battle yourself, you LONER!"
     else:
-        msg = "{} wins!!!".format(mention.display_name)
+        i = random.randint(0,1000)
+        if i%2 == 0:
+            msg = "{} wins!!!".format(ctx.author.name)
+        else:
+            msg = "{} wins!!!".format(mention.display_name)
+    #msg = "".ctx.author.name
     await ctx.send(msg)
 
-    
-
-# @bot.command(name="battle", help="Battle with another user!")
-# async def battle(ctx):
-#     await ctx.send("Mention who you want to fight!")
+@battle.error
+async def battle_error(ctx : Context, error):
+    if isinstance(error, commands.MissingRequiredArgument):
+        await ctx.send('I could not find that member... do `!battle @adversary`')
 
 @bot.command()
-async def tell_me_about_yourself(ctx):
+async def tell_me_about_yourself(ctx : Context):
     text = "My name is OnikenX's pet!\n I was built originally by Kakarot2000. I'm now ~~a slave to OnikenX~~ OnikenX's loyal pet, you can see my services with !help.\n :)"
     await ctx.send(text)
 
