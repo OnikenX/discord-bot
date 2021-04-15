@@ -200,7 +200,7 @@ async def on_member_join(member):
 
 @bot.command()
 async def tell_me_about_yourself(ctx):
-    text = "My name is OnikenX's pet!\n I was built originally by Kakarot2000. I'm now a slave to OnikenX, you can see my services with !help.\n :)"
+    text = "My name is OnikenX's pet!\n I was built originally by Kakarot2000. I'm now ~~a slave to OnikenX~~ OnikenX's loyal pet, you can see my services with !help.\n :)"
     await ctx.send(text)
 
 @bot.event
