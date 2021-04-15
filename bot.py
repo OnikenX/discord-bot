@@ -214,12 +214,12 @@ if __name__ == "__main__":
 
 @bot.command(name="battle", help="Battle with another user!")
 async def battle(msg):
-    if (len(msg.raw_mentions) == 1)
+    if len(msg.raw_mentions) == 1:
         i = random.randint(0,1000)
-        if (i%2 == 0)
+        if i%2 == 0:
             msg = "{} wins!!!".format(msg.author.name)
-        else
+        else:
             msg = "{} wins!!!".format(msg.raw_mentions[0])
-    if (len(msg.raw_mentions) != 1)
+    if len(msg.raw_mentions) != 1:
         msg = "Please use: !battle <@user>"
     await bot.say(msg)
