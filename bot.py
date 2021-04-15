@@ -11,10 +11,12 @@ load_dotenv()
 # Get the API token from the .env file.
 DISCORD_TOKEN = os.getenv("discord_token")
 
+music_folder = "/tmp/discord-bot/"
+os.system('mkdir -p {}'.format(music_folder))
+
 intents = discord.Intents().default()
 client = discord.Client(intents=intents)
 bot = commands.Bot(command_prefix="!", intents=intents)
-
 
 youtube_dl.utils.bug_reports_message = lambda: ""
 
@@ -57,7 +59,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
 @bot.command(name="cona")
 async def play(ctx):
     await ctx.send(
-        "Eu só quero o jota 😳"
+        "Eu só quero {} 😳".format(ctx.author.name)
     )
 
 @bot.command(name="play_song", help="To play song")
