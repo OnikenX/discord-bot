@@ -57,7 +57,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
         return filename
 
 @bot.command(name="cona")
-async def play(ctx):
+async def cona(ctx):
     await ctx.send(
         "Eu só quero {} 😳".format(ctx.author.name)
     )
@@ -65,12 +65,20 @@ async def play(ctx):
 @bot.command(name="play", help="To play song")
 async def play(ctx, url):
 
-    # if not ctx.message.author.name == "Rohan Krishna":
-    #     await ctx.send("NOT AUTHORISED!")
-    #     return
+    if not ctx.message.author.voice:
+        await ctx.send(
+            "{} is not connected to a voice channel".format(ctx.message.author.name)
+        )
+        return
+
+    # connecting to the channel
 
     channel = ctx.message.author.voice.channel
-    await channel.connect()
+    try:
+        await channel.connect()
+    except:
+        pass
+    
     try:
         server = ctx.message.guild
         voice_channel = server.voice_client
