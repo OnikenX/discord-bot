@@ -62,7 +62,7 @@ async def play(ctx):
         "Eu só quero {} 😳".format(ctx.author.name)
     )
 
-@bot.command(name="play_song", help="To play song")
+@bot.command(name="play", help="To play song")
 async def play(ctx, url):
 
     # if not ctx.message.author.name == "Rohan Krishna":
