@@ -68,6 +68,9 @@ async def play(ctx, url):
     # if not ctx.message.author.name == "Rohan Krishna":
     #     await ctx.send("NOT AUTHORISED!")
     #     return
+
+    channel = ctx.message.author.voice.channel
+    await channel.connect()
     try:
         server = ctx.message.guild
         voice_channel = server.voice_client
@@ -82,16 +85,16 @@ async def play(ctx, url):
         await ctx.send("The bot is not connected to a voice channel.")
 
 
-@bot.command(name="join", help="Tells the bot to join the voice channel")
-async def join(ctx):
-    if not ctx.message.author.voice:
-        await ctx.send(
-            "{} is not connected to a voice channel".format(ctx.message.author.name)
-        )
-        return
-    else:
-        channel = ctx.message.author.voice.channel
-    await channel.connect()
+# @bot.command(name="join", help="Tells the bot to join the voice channel")
+# async def join(ctx):
+#     if not ctx.message.author.voice:
+#         await ctx.send(
+#             "{} is not connected to a voice channel".format(ctx.message.author.name)
+#         )
+#         return
+#     else:
+#         channel = ctx.message.author.voice.channel
+#     await channel.connect()
 
 
 @bot.command(name="pause", help="This command pauses the song")
