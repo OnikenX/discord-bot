@@ -11,7 +11,7 @@ load_dotenv()
 # Get the API token from the .env file.
 DISCORD_TOKEN = os.getenv("discord_token")
 
-intents = discord.Intents().all()
+intents = discord.Intents().default()
 client = discord.Client(intents=intents)
 bot = commands.Bot(command_prefix="!", intents=intents)
 
@@ -54,13 +54,18 @@ class YTDLSource(discord.PCMVolumeTransformer):
         filename = data["title"] if stream else ytdl.prepare_filename(data)
         return filename
 
+@bot.command(name="cona")
+async def play(ctx):
+    await ctx.send(
+        "Eu só quero o jota 😳"
+    )
 
 @bot.command(name="play_song", help="To play song")
 async def play(ctx, url):
 
-    if not ctx.message.author.name == "Rohan Krishna":
-        await ctx.send("NOT AUTHORISED!")
-        return
+    # if not ctx.message.author.name == "Rohan Krishna":
+    #     await ctx.send("NOT AUTHORISED!")
+    #     return
     try:
         server = ctx.message.guild
         voice_channel = server.voice_client
@@ -68,10 +73,10 @@ async def play(ctx, url):
         async with ctx.typing():
             filename = await YTDLSource.from_url(url, loop=bot.loop)
             voice_channel.play(
-                discord.FFmpegPCMAudio(executable="ffmpeg.exe", source=filename)
+                discord.FFmpegPCMAudio(executable="ffmpeg", source=filename)
             )
         await ctx.send("**Now playing:** {}".format(filename))
-    except:
+    except(e):
         await ctx.send("The bot is not connected to a voice channel.")
 
 
@@ -129,10 +134,10 @@ async def stop(ctx):
 async def on_ready():
     print("Running!")
     for guild in bot.guilds:
-        for channel in guild.text_channels:
-            if str(channel) == "general":
-                await channel.send("Bot Activated..")
-                await channel.send(file=discord.File("giphy.png"))
+        # for channel in guild.text_channels:
+            # if str(channel) == "general":
+                # await channel.send("Bot Activated..")
+                # await channel.send(file=discord.File("giphy.png"))
         print("Active in {}\n Member Count : {}".format(guild.name, guild.member_count))
 
 
@@ -190,9 +195,8 @@ async def on_member_join(member):
 
 @bot.command()
 async def tell_me_about_yourself(ctx):
-    text = "My name is WallE!\n I was built by Kakarot2000. At present I have limited features(find out more by typing !help)\n :)"
+    text = "My name is OnikenX's pet!\n I was built originally by Kakarot2000. I'm now a slave to OnikenX, you can see my services with !help.\n :)"
     await ctx.send(text)
-
 
 @bot.event
 async def on_message(message):
