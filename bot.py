@@ -14,7 +14,7 @@ load_dotenv()
 DISCORD_TOKEN = os.getenv("discord_token")
 
 music_folder = "/tmp/discord-bot/"
-os.system('mkdir -p {}'.format(music_folder))
+os.system(f"mkdir -p {music_folder}")
 
 intents = discord.Intents().default()
 client = discord.Client(intents=intents)
@@ -64,14 +64,14 @@ class YTDLSource(discord.PCMVolumeTransformer):
 @bot.command(name="cona")
 async def cona(ctx : Context):
     await ctx.send(
-        "Eu só quero {} 😳".format(ctx.author.name)
+        f"Eu só quero {ctx.author.name} 😳"
     )
 
 @bot.command(name="play", help="To play song")
 async def play(ctx : Context , url):
     if not ctx.message.author.voice:
         await ctx.send(
-            "{} is not connected to a voice channel".format(ctx.message.author.name)
+            f"{ctx.message.author.name} is not connected to a voice channel"
         )
         return
     # connecting to the channel
@@ -90,7 +90,7 @@ async def play(ctx : Context , url):
             voice_channel.play(
                 discord.FFmpegPCMAudio(executable="ffmpeg", source=filename), after
             )
-        await ctx.send("**Now playing:** {}".format(filename))
+        await ctx.send(f"**Now playing:** {filename}")
     except:
         await ctx.send("The bot is not connected to a voice channel.")
 
@@ -140,12 +140,12 @@ async def on_ready():
             # if str(channel) == "general":
                 # await channel.send("Bot Activated..")
                 # await channel.send(file=discord.File("giphy.png"))
-        print("Active in {}\n Member Count : {}".format(guild.name, guild.member_count))
+        print(f"Active in {guild.name}\n Member Count : {guild.member_count}")
 
 
 @bot.command(help="Prints details of Author")
 async def whats_my_name(ctx : Context):
-    await ctx.send("Hello {}".format(ctx.author.name))
+    await ctx.send(f"Hello {ctx.author.name}")
 
 
 @bot.command(help="Prints details of Server")
@@ -173,10 +173,7 @@ async def where_am_i(ctx : Context):
     members = []
     async for member in ctx.guild.fetch_members(limit=150):
         await ctx.send(
-            "Name : {}\t Status : {}\n Joined at {}".format(
-                member.display_name, str(member.status), str(member.joined_at)
-            )
-        )
+            f"Name : {member.display_name}\t Status : {str(member.status)}\n Joined at {str(member.joined_at)}")
 
 
 @bot.event
@@ -187,10 +184,7 @@ async def on_member_join(member):
             if member.is_on_mobile() == True:
                 on_mobile = True
             await channel.send(
-                "Welcome to the Server {}!!\n On Mobile : {}".format(
-                    member.name, on_mobile
-                )
-            )
+                f"Welcome to the Server {member.name}!!\n On Mobile : {on_mobile}")
 
         # TODO : Filter out swear words from messages
 
@@ -202,9 +196,9 @@ async def battle(ctx : Context, mention : discord.Member):
     else:
         i = random.randint(0,1000)
         if i%2 == 0:
-            msg = "{} wins!!!".format(ctx.author.name)
+            msg = f"{ctx.author.name} wins!!!"
         else:
-            msg = "{} wins!!!".format(mention.display_name)
+            msg = f"{mention.display_name} wins!!!"
     #msg = "".ctx.author.name
     await ctx.send(msg)
 
