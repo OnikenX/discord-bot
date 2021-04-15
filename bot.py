@@ -5,7 +5,7 @@ from discord.ext import commands, tasks
 import os
 from dotenv import load_dotenv
 import youtube_dl
-
+import random
 
 load_dotenv()
 # Get the API token from the .env file.
@@ -206,6 +206,21 @@ async def on_member_join(member):
         # TODO : Filter out swear words from messages
 
 
+@bot.command(name="battle", help="Battle with another user!")
+async def battle(ctx, mention : discord.Member):
+    i = random.randint(0,1000)
+    if i%2 == 0:
+        msg = "{} wins!!!".format(msg.author.name)
+    else:
+        msg = "{} wins!!!".format(mention.display_name)
+    await ctx.send(msg)
+
+    
+
+# @bot.command(name="battle", help="Battle with another user!")
+# async def battle(ctx):
+#     await ctx.send("Mention who you want to fight!")
+
 @bot.command()
 async def tell_me_about_yourself(ctx):
     text = "My name is OnikenX's pet!\n I was built originally by Kakarot2000. I'm now ~~a slave to OnikenX~~ OnikenX's loyal pet, you can see my services with !help.\n :)"
@@ -225,14 +240,3 @@ async def on_message(message):
 if __name__ == "__main__":
     bot.run(DISCORD_TOKEN)
 
-@bot.command(name="battle", help="Battle with another user!")
-async def battle(msg):
-    if (len(msg.raw_mentions) == 1)
-        i = random.randint(0,1000)
-        if (i%2 == 0)
-            msg = "{} wins!!!".format(msg.author.name)
-        else
-            msg = "{} wins!!!".format(msg.raw_mentions[0])
-    if (len(msg.raw_mentions) != 1)
-        msg = "Please use: !battle <@user>"
-    await bot.say(msg)
