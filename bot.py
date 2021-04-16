@@ -1,25 +1,61 @@
-# WaLLE
-
-import asyncio
-import os
-import random
-
 import discord
 import youtube_dl
 from discord.ext import commands, tasks
 from discord.ext.commands import Context
 from dotenv import load_dotenv
+import discord
+import youtube_dl
+from discord.ext import commands, tasks
+from discord.ext.commands import Context
+from dotenv import load_dotenv
+import os
+import random
+
+import asyncio
+import os
+import random
+
+
+intents = discord.Intents().default()
+bot = commands.Bot(command_prefix="!", intents=intents)
+client = discord.Client(intents=intents)
 
 load_dotenv()
 # Get the API token from the .env file.
 DISCORD_TOKEN = os.getenv("discord_token")
 
-music_folder = "/tmp/discord-bot/"
-os.system("mkdir -p {}".format(music_folder))
 
-intents = discord.Intents().default()
-client = discord.Client(intents=intents)
-bot = commands.Bot(command_prefix="!", intents=intents)
+##########################################################################
+##########################################################################
+################################ AUDIO ###################################
+##########################################################################
+##########################################################################
+
+
+class YTDLSource(discord.PCMVolumeTransformer):
+    def __init__(self, source, *, data, volume=0.5):
+        super().__init__(source, volume)
+        self.data = data
+        self.title = data.get("title")
+        self.url = ""
+
+    @classmethod
+    async def from_url(cls, url, *, loop=None, stream=False):
+
+        loop = loop or asyncio.get_event_loop()
+        data = await loop.run_in_executor(
+            None, lambda: ytdl.extract_info(url, download=not stream)
+        )
+        if "entries" in data:
+            # take first item from a playlist
+            data = data["entries"][0]
+        filename = data["title"] if stream else ytdl.prepare_filename(data)
+        return filename
+
+playlist = []
+
+music_folder = "/tmp/discord-bot/"
+os.system(f"mkdir -p {music_folder}")
 
 youtube_dl.utils.bug_reports_message = lambda: ""
 
@@ -41,16 +77,34 @@ ffmpeg_options = {"options": "-vn"}
 
 ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
 
-playlist = []
 
 
-def after_song(ctx: Context):
+
+@bot.command(name='next', help='plays next song')
+async def next(ctx: Context):
+    '''does a auto next'''
     playlist.pop(0)
     if len(playlist) != 0:
-        generic_play(ctx, playlist[0])
+        await true_play(ctx, playlist[0])
+
+
+async def add_to_playlist(ctx: Context, url):
+    '''function to be called to add url or keywords to play musics in thing'''
+    if type(url) == list:
+        url = " ".join(url)
+    if type(url) != str:
+        ctx.send(f"Fudeu: ErrIntern, url not str, it's {type(url)}")
+        return
+    if not ctx.message.author.voice:
+        await ctx.send(f"{ctx.message.author.name} is not connected to a voice channel")
+        return
+    playlist.append(url)
+    if len(playlist) == 1:
+        await true_play(ctx, playlist[0])
 
 
 async def true_play(ctx: Context, url):
+    '''the one that really plays the music'''
     # connecting to the channel
     channel = ctx.message.author.voice.channel
     try:
@@ -64,54 +118,19 @@ async def true_play(ctx: Context, url):
             filename = await YTDLSource.from_url(url, loop=bot.loop)
             voice_channel.play(
                 discord.FFmpegPCMAudio(executable="ffmpeg", source=filename),
-                after=after_song(ctx),
+                after=next(ctx),
             )
-        print('fiz download e corri')
+        print("fiz download e corri")
         await ctx.send(f"**Now playing:** {filename}")
-    except Exception as e: await ctx.send(f'Fudeu: {e}')
+    except Exception as e:
+        await ctx.send(f"Fudeu: {e}")
 
-
-async def generic_play(ctx: Context, url):
-    url = ' '.join(url)
-    if not ctx.message.author.voice:
-        await ctx.send( f"{ctx.message.author.name} is not connected to a voice channel")
-        return
-    playlist.append(url)
-    if len(playlist) == 1:
-        print('entreing true_play')
-        await true_play(ctx, playlist[0])
-
-
-class YTDLSource(discord.PCMVolumeTransformer):
-    def __init__(self, source, *, data, volume=0.5):
-        super().__init__(source, volume)
-        self.data = data
-        self.title = data.get("title")
-        self.url = ""
-
-    @classmethod
-    async def from_url(cls, url, *, loop=None, stream=False):
-        
-        loop = loop or asyncio.get_event_loop()
-        data = await loop.run_in_executor(
-            None, lambda: ytdl.extract_info(url, download=not stream)
-        )
-        if "entries" in data:
-            # take first item from a playlist
-            data = data["entries"][0]
-        filename = data["title"] if stream else ytdl.prepare_filename(data)
-        return filename
-
-
-@bot.command(name="cona")
-async def cona(ctx):
-    await ctx.send(f"Eu só quero {ctx.author.name} 😳")
 
 
 @bot.command(name="play", help="To play song")
 async def play(ctx: Context, url):
-    print('lets generic')
-    await generic_play(ctx, url)
+    print("lets generic")
+    await add_to_playlist(ctx, url)
 
 
 @bot.command(name="pause", help="This command pauses the song")
@@ -145,6 +164,7 @@ async def queue(ctx: Context):
         await ctx.send("{}\n```".format(printable_queue))
 
 
+
 @bot.command(name="leave", help="To make the bot leave the voice channel")
 async def leave(ctx: Context):
     voice_client = ctx.message.guild.voice_client
@@ -152,6 +172,7 @@ async def leave(ctx: Context):
         await voice_client.disconnect()
     else:
         await ctx.send("The bot is not connected to a voice channel.")
+
 
 @bot.command(name="stop", help="Stops the song")
 async def stop(ctx: Context):
@@ -161,6 +182,29 @@ async def stop(ctx: Context):
     else:
         await ctx.send("The bot is not playing anything at the moment.")
 
+
+@bot.command()
+async def yamete(ctx: Context):
+    await add_to_playlist(ctx, "https://www.youtube.com/watch?v=50bnHZLMqTI")
+
+
+@bot.command()
+async def sus(ctx: Context):
+    await add_to_playlist(ctx, "https://www.youtube.com/watch?v=grd-K33tOSM")
+
+
+
+
+##########################################################################
+##########################################################################
+####################### NORMAL BOT STUFF #################################
+##########################################################################
+##########################################################################
+
+
+@bot.command(name="cona")
+async def cona(ctx):
+    await ctx.send(f"Eu só quero {ctx.author.name} 😳")
 
 
 @bot.event
@@ -179,14 +223,6 @@ async def whats_my_name(ctx: Context):
     await ctx.send(f"Hello {ctx.author.name}")
 
 
-@bot.command()
-async def yamete(ctx: Context):
-    await generic_play(ctx, "https://www.youtube.com/watch?v=50bnHZLMqTI")
-
-
-@bot.command()
-async def sus(ctx: Context):
-    await generic_play(ctx, "https://www.youtube.com/watch?v=grd-K33tOSM")
 
 
 @bot.command(help="Prints details of Server")
@@ -235,8 +271,8 @@ async def on_member_join(member):
 
         # TODO : Filter out swear words from messages
 
-
-@bot.command(name="battle", help="Battle with another user!")
+################################################################
+@bot.command(name="battle", help="Battle with another user")
 async def battle(ctx: Context):
     if ctx.author.id == ctx.message.mentions[0].id:
         await ctx.send("Don't battle yourself, you LONER!")
@@ -252,16 +288,26 @@ async def battle_error(ctx: Context, error):
     else:
         await ctx.send(f"A batalha fudeu: {error}")
 
-@bot.command(name="doilove", help="How compatible are you with another user!")
+@bot.command(name="doilove", help="FInd out how compatible are you with another user")
 async def doilove(ctx: Context):
-    print(type(ctx.author.id))
-    await ctx.send(f"<@{winner}> has the biggest dick!!!")
+    if len(ctx.message.mentions) == 0:
+        await ctx.send("Yes you do! But WHO is the question... do `!doilove @person`")
+    lovemeter = (69 - (ctx.author.id - ctx.message.mentions[0].id) % 69) % 11
+    rest = 10 - lovemeter
+    msg = "["
+    while lovemeter >= 0:
+        msg += f"❤️"
+        lovemeter -= 1
+    while rest >= 0:
+        msg += f"🖤"
+        rest -= 1
+    msg += "]"
+    await ctx.send(f"<3 Love meter Ɛ> {msg}")
 
 @bot.command()
 async def tell_me_about_yourself(ctx: Context):
     text = "My name is OnikenX's pet!\n I was built originally by Kakarot2000. I'm now ~~a slave to OnikenX~~ OnikenX's loyal pet, you can see my services with !help.\n :)"
     await ctx.send(text)
-
 
 @bot.event
 async def on_message(message):
