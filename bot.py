@@ -16,7 +16,8 @@ import os
 import random
 
 
-intents = discord.Intents().default()
+intents = discord.Intents.default()
+intents.members = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 client = discord.Client(intents=intents)
 
@@ -227,6 +228,7 @@ async def whats_my_name(ctx: Context):
 
 @bot.command(help="Prints details of Server")
 async def where_am_i(ctx: Context):
+    print("Command Issued: where_am_i\n   - message: {}\n   - debug: {}".format(ctx.message.content, ctx.message))
     owner = str(ctx.guild.owner)
     region = str(ctx.guild.region)
     guild_id = str(ctx.guild.id)
@@ -247,13 +249,14 @@ async def where_am_i(ctx: Context):
 
     await ctx.send(embed=embed)
 
-    members = []
-    async for member in ctx.guild.fetch_members(limit=150):
-        await ctx.send(
-            "Name : {}\t Status : {}\n Joined at {}".format(
-                member.display_name, str(member.status), str(member.joined_at)
-            )
-        )
+    #Requires Privileged Gateway Intents - Server Members Intent Enabled.
+    #members = []
+    #async for member in ctx.guild.fetch_members(limit=150):
+    #    await ctx.send(
+    #        "Name : {}\t Status : {}\n Joined at {}".format(
+    #            member.display_name, str(member.status), str(member.joined_at)
+    #        )
+    #    )
 
 
 @bot.event
@@ -274,7 +277,7 @@ async def on_member_join(member):
 ################################################################
 @bot.command(name="battle", help="Battle with another user")
 async def battle(ctx: Context):
-    print("Command Issued: battle")
+    print("Command Issued: battle\n   - message: {}\n   - debug: {}".format(ctx.message.content, ctx.message))
     if ctx.author.id == ctx.message.mentions[0].id:
         await ctx.send("Don't battle yourself, you LONER!")
         return
@@ -291,11 +294,11 @@ async def battle_error(ctx: Context, error):
 
 @bot.command(name="doilove", help="FInd out how compatible are you with another user")
 async def doilove(ctx: Context):
-    print("Command Issued: doilove")
+    print("Command Issued: doilove\n   - message: {}\n   - debug: {}".format(ctx.message.content, ctx.message))
     if len(ctx.message.mentions) == 0:
         await ctx.send("Yes you do! But WHO is the question... do `!doilove @person`")
         return
-    lovemeter = (69 - (ctx.author.id - ctx.message.mentions[0].id) % 69 + 4) % 11
+    lovemeter = (69 - (ctx.message.author.id - ctx.message.mentions[0].id) % 69 + 4) % 11
     red = lovemeter
     white = 10 - lovemeter
     msg = "<3 Love meter Ɛ> ["
