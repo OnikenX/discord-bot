@@ -1,2 +1,5 @@
 .env
 .idea
+.vscode
+.pyc
+__pycache__
