@@ -24,8 +24,6 @@ load_dotenv()
 # Get the API token from the .env file.
 DISCORD_TOKEN = os.getenv("discord_token")
 
-music_folder = "/tmp/discord-bot/"
-os.system(f"mkdir -p {music_folder}")
 
 ##########################################################################
 ##########################################################################
@@ -43,6 +41,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
 
     @classmethod
     async def from_url(cls, url, *, loop=None, stream=False):
+
         loop = loop or asyncio.get_event_loop()
         data = await loop.run_in_executor(
             None, lambda: ytdl.extract_info(url, download=not stream)
@@ -54,7 +53,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
         return filename
 
 playlist = []
-playlist_status=0
+
 music_folder = "/tmp/discord-bot/"
 os.system(f"mkdir -p {music_folder}")
 
@@ -84,17 +83,9 @@ ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
 @bot.command(name='next', help='plays next song')
 async def next(ctx: Context):
     '''does a auto next'''
-    await internal_next(ctx)
-
-@bot.command(name="cona")
-async def cona(ctx : Context):
-    await ctx.send(
-        f"Eu só quero {ctx.author.name} 😳"
-    )
-async def internal_next(ctx :Context):
+    playlist.pop(0)
     if len(playlist) != 0:
         await true_play(ctx, playlist[0])
-
 
 
 async def add_to_playlist(ctx: Context, url):
@@ -105,16 +96,11 @@ async def add_to_playlist(ctx: Context, url):
         ctx.send(f"Fudeu: ErrIntern, url not str, it's {type(url)}")
         return
     if not ctx.message.author.voice:
-        await ctx.send(
-            f"{ctx.message.author.name} is not connected to a voice channel"
-        )
         await ctx.send(f"{ctx.message.author.name} is not connected to a voice channel")
         return
     playlist.append(url)
     if len(playlist) == 1:
-        playlist_status = 0
         await true_play(ctx, playlist[0])
-
 
 
 async def true_play(ctx: Context, url):
@@ -132,19 +118,18 @@ async def true_play(ctx: Context, url):
             filename = await YTDLSource.from_url(url, loop=bot.loop)
             voice_channel.play(
                 discord.FFmpegPCMAudio(executable="ffmpeg", source=filename),
-                after=await internal_next(ctx)
+                after=next(ctx),
             )
+        print("fiz download e corri")
         await ctx.send(f"**Now playing:** {filename}")
-    except:
-        await ctx.send("The bot is not connected to a voice channel.")
     except Exception as e:
-        err = f"Fudeu: {e}"
-        print(err)
-        await ctx.send(err)
+        await ctx.send(f"Fudeu: {e}")
+
 
 
 @bot.command(name="play", help="To play song")
-async def play(ctx: Context, *, url):
+async def play(ctx: Context, url):
+    print("lets generic")
     await add_to_playlist(ctx, url)
 
 
@@ -212,7 +197,7 @@ async def sus(ctx: Context):
 
 ##########################################################################
 ##########################################################################
-######################### TEXT BOT STUFF #################################
+####################### NORMAL BOT STUFF #################################
 ##########################################################################
 ##########################################################################
 
@@ -227,9 +212,6 @@ async def on_ready():
     print("Running!")
     for guild in bot.guilds:
         # for channel in guild.text_channels:
-            # if str(channel) == "general":
-                # await channel.send("Bot Activated..")
-                # await channel.send(file=discord.File("giphy.png"))
         # if str(channel) == "general":
         # await channel.send("Bot Activated..")
         # await channel.send(file=discord.File("giphy.png"))
@@ -237,7 +219,7 @@ async def on_ready():
 
 
 @bot.command(help="Prints details of Author")
-async def whats_my_name(ctx : Context):
+async def whats_my_name(ctx: Context):
     await ctx.send(f"Hello {ctx.author.name}")
 
 
@@ -268,7 +250,10 @@ async def where_am_i(ctx: Context):
     members = []
     async for member in ctx.guild.fetch_members(limit=150):
         await ctx.send(
-            f"Name : {member.display_name}\t Status : {str(member.status)}\n Joined at {str(member.joined_at)}")
+            "Name : {}\t Status : {}\n Joined at {}".format(
+                member.display_name, str(member.status), str(member.joined_at)
+            )
+        )
 
 
 @bot.event
@@ -279,12 +264,14 @@ async def on_member_join(member):
             if member.is_on_mobile() == True:
                 on_mobile = True
             await channel.send(
-                f"Welcome to the Server {member.name}!!\n On Mobile : {on_mobile}")
+                "Welcome to the Server {}!!\n On Mobile : {}".format(
+                    member.name, on_mobile
+                )
+            )
 
-##########################################################################
-############################# Battle #####################################
-##########################################################################
+        # TODO : Filter out swear words from messages
 
+################################################################
 @bot.command(name="battle", help="Battle with another user")
 async def battle(ctx: Context):
     if ctx.author.id == ctx.message.mentions[0].id:
@@ -294,19 +281,6 @@ async def battle(ctx: Context):
     await ctx.send(f"<@{winner}> has the biggest dick!!!")
 
 
-@bot.command(name="battle", help="Battle with another user!")
-async def battle(ctx : Context, mention : discord.Member):
-    if ctx.author.name == mention.display_name:
-        msg = "Don't battle yourself, you LONER!"
-    else:
-        i = random.randint(0,1000)
-        if i%2 == 0:
-            msg = f"{ctx.author.name} wins!!!"
-        else:
-            msg = f"{mention.display_name} wins!!!"
-    #msg = "".ctx.author.name
-    await ctx.send(msg)
-
 @battle.error
 async def battle_error(ctx: Context, error):
     if isinstance(error, commands.MissingRequiredArgument):
@@ -314,24 +288,18 @@ async def battle_error(ctx: Context, error):
     else:
         await ctx.send(f"A batalha fudeu: {error}")
 
-
-##########################################################################
-############################# DOILOVE ####################################
-##########################################################################
-
-
 @bot.command(name="doilove", help="FInd out how compatible are you with another user")
 async def doilove(ctx: Context):
     if len(ctx.message.mentions) == 0:
         await ctx.send("Yes you do! But WHO is the question... do `!doilove @person`")
-    lovemeter = (69 - (ctx.author.id - ctx.message.mentions[0].id) % 69 + 5) % 11
+    lovemeter = (69 - (ctx.author.id - ctx.message.mentions[0].id) % 69) % 11
     rest = 10 - lovemeter
     msg = "["
-    while lovemeter > 0:
+    while lovemeter >= 0:
         msg += f"❤️"
         lovemeter -= 1
-    while rest > 0:
-        msg += f"🤍"
+    while rest >= 0:
+        msg += f"🖤"
         rest -= 1
     msg += "]"
     await ctx.send(f"<3 Love meter Ɛ> {msg}")
@@ -350,17 +318,6 @@ async def on_message(message):
 
     if str(message.content).lower() in ["swear_word1", "swear_word2"]:
         await message.channel.purge(limit=1)
-
-
-##########################################################################
-##########################################################################
-############################# DEBUGGING ##################################
-##########################################################################
-##########################################################################
-
-@bot.command()
-async def test_args(ctx : commands):
-    await ctx.send(f"Mensagem: {ctx}")
 
 
 if __name__ == "__main__":
