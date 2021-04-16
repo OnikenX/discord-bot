@@ -290,19 +290,35 @@ async def battle_error(ctx: Context, error):
 
 @bot.command(name="doilove", help="FInd out how compatible are you with another user")
 async def doilove(ctx: Context):
+    print("Command Issued: doilove | Server: {} | By: {} | Arguments: {}".format(ctx.channel, str(ctx.author), " ".join(context.args)))
     if len(ctx.message.mentions) == 0:
         await ctx.send("Yes you do! But WHO is the question... do `!doilove @person`")
-    lovemeter = (69 - (ctx.author.id - ctx.message.mentions[0].id) % 69) % 11
-    rest = 10 - lovemeter
-    msg = "["
-    while lovemeter >= 0:
+        return
+    lovemeter = (69 - (ctx.author.id - ctx.message.mentions[0].id) % 69 + 4) % 11
+    red = lovemeter
+    white = 10 - lovemeter
+    msg = "<3 Love meter Ɛ> ["
+    while red > 0:
         msg += f"❤️"
-        lovemeter -= 1
-    while rest >= 0:
+        red -= 1
+    while white > 0:
         msg += f"🖤"
-        rest -= 1
+        white -= 1
     msg += "]"
-    await ctx.send(f"<3 Love meter Ɛ> {msg}")
+    lovemeter = int(lovemeter/2)
+    if lovemeter == 0:
+        msg += "\nA better romance than Crepusculo! 💔"
+    if lovemeter == 1:
+        msg += "\nYou don't need love, as long as there's a hole"
+    if lovemeter == 2:
+        msg += "\nMaybe with some effort... and dick picks"
+    if lovemeter == 3:
+        msg += "\nAs good as your hand!"
+    if lovemeter == 4:
+        msg += "\nDamn, {} must give you lots of wet dreams!!"
+    if lovemeter == 5:
+        msg += "\nDamn, {} must give you lots of wet dreams!!"
+    await ctx.send(msg.format(ctx.message.mentions[0].display_name))
 
 @bot.command()
 async def tell_me_about_yourself(ctx: Context):
