@@ -322,7 +322,7 @@ async def doilove(ctx: Context):
         msg += "\nDamn, {} must give you lots of wet dreams!!"
     if lovemeter == 5:
         msg += "\nDamn, {} must give you lots of wet dreams!!"
-    await ctx.send(msg.format(ctx.message.mentions[0].name))
+    await ctx.send(msg.format(ctx.message.mentions[0].display_name))
 
 @bot.command()
 async def tell_me_about_yourself(ctx: Context):
