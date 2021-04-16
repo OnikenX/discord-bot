@@ -324,6 +324,62 @@ async def doilove(ctx: Context):
         msg += "\nDamn, {} must give you lots of wet dreams!!"
     await ctx.send(msg.format(ctx.message.mentions[0].display_name))
 
+######################################################################
+#############################         ################################
+############################# NHENTAI ################################
+#############################         ################################
+######################################################################
+
+from NHentai import NHentai
+nhentai = NHentai()
+
+@bot.command(name="nh_find", help="find doujin from nhentai")
+async def nh_find(ctx: Context, arg):
+    print("Command Issued: nh_find\n   - message: {}\n   - debug: {}".format(ctx.message.content, ctx.message))
+    if arg.isnumeric():
+        await nh_display(ctx, arg)
+        return
+    SearchPage = nhentai.search(query=arg, sort='popular', page=1)
+    #print(dir(SearchPage))
+    count = 3 if SearchPage.total_results > 3 else SearchPage.total_results
+    if count == 0:
+        await ctx.send(f"no results were found!")
+        return
+    embeds = []*count
+    i = 0
+    while i < count:
+        await nh_display(ctx, SearchPage.doujins[i].id)
+        i+=1
+
+@bot.command(name="nh_display", help="display doujin from nhentai")
+async def nh_display(ctx: Context, arg):
+    print("Command Issued: nh_display\n   - message: {}\n   - debug: {}".format(ctx.message.content, ctx.message))
+    Doujin = nhentai._get_doujin(id=arg)
+    if Doujin is None:
+        await ctx.send(f"no results were found!")
+        return
+    tags = ""
+    for tag in Doujin.tags:
+        tags += f"{tag} "
+    embed = discord.Embed(
+        title=Doujin.title + " Server Information",
+        description=Doujin.secondary_title,
+        color=discord.Color.gold(),
+        url=f"https://nhentai.net/g/{arg}",
+    )
+    embed.set_image(url=Doujin.images[0])
+    #embed.add_field(name="Sauce", value=f"[nhentai.net/g/{arg}](https://nhentai.net/g/{arg})", inline=True)
+    embed.add_field(name="Tags", value=tags, inline=True)
+    embed.add_field(name="Pages", value=Doujin.total_pages, inline=False)
+    embed.set_footer(text=f"Magic code: {arg}")
+    await ctx.send(embed=embed)
+
+######################################################################
+#############################         ################################
+#############################  DEBUG  ################################
+#############################         ################################
+######################################################################
+
 @bot.command()
 async def tell_me_about_yourself(ctx: Context):
     text = "My name is OnikenX's pet!\n I was built originally by Kakarot2000. I'm now ~~a slave to OnikenX~~ OnikenX's loyal pet, you can see my services with !help.\n :)"
@@ -333,8 +389,12 @@ async def tell_me_about_yourself(ctx: Context):
 async def on_message(message):
     # bot.process_commands(msg) is a couroutine that must be called here since we are overriding the on_message event
     await bot.process_commands(message)
-    if str(message.content).lower() == "hello":
-        await message.channel.send("Hi!")
+    if str(message.content).lower().find("tetr.io") != -1:
+        await add_to_playlist(ctx, "https://www.youtube.com/watch?v=bB-d7bc63CE")
+        await message.channel.send("⚡⚡⚡!!!Thunder!!!⚡⚡⚡")
+
+    if str(message.content).lower().find("tetris") != -1:
+        await message.channel.send("⚡⚡⚡!!!Thunder!!!⚡⚡⚡")
 
     if str(message.content).lower() in ["swear_word1", "swear_word2"]:
         await message.channel.purge(limit=1)
