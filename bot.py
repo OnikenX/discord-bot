@@ -107,21 +107,18 @@ async def add_to_playlist(ctx: Context, url):
 async def true_play(ctx: Context, url):
     '''the one that really plays the music'''
     # connecting to the channel
+    print(f"true_play")
     channel = ctx.message.author.voice.channel
     try:
         await channel.connect()
-    except:
-        pass
-    try:
-        server = ctx.message.guild
-        voice_channel = server.voice_client
+        voice_channel = ctx.voice_client
         async with ctx.typing():
             filename = await YTDLSource.from_url(url, loop=bot.loop)
+            print(filename)
             voice_channel.play(
                 discord.FFmpegPCMAudio(executable="ffmpeg", source=filename),
-                after=next(ctx),
+                #after=next(ctx),
             )
-        print("fiz download e corri")
         await ctx.send(f"**Now playing:** {filename}")
     except Exception as e:
         await ctx.send(f"Fudeu: {e}")
@@ -130,7 +127,6 @@ async def true_play(ctx: Context, url):
 
 @bot.command(name="play", help="To play song")
 async def play(ctx: Context, url):
-    print("lets generic")
     await add_to_playlist(ctx, url)
 
 
@@ -168,7 +164,7 @@ async def queue(ctx: Context):
 
 @bot.command(name="leave", help="To make the bot leave the voice channel")
 async def leave(ctx: Context):
-    voice_client = ctx.message.guild.voice_client
+    voice_client = ctx.voice_client
     if voice_client.is_connected():
         await voice_client.disconnect()
     else:
@@ -177,7 +173,7 @@ async def leave(ctx: Context):
 
 @bot.command(name="stop", help="Stops the song")
 async def stop(ctx: Context):
-    voice_client = ctx.message.guild.voice_client
+    voice_client = ctx.voice_client
     if voice_client.is_playing():
         voice_client.stop()
     else:
@@ -340,7 +336,6 @@ async def nh_find(ctx: Context, arg):
         await nh_display(ctx, arg)
         return
     SearchPage = nhentai.search(query=arg, sort='popular', page=1)
-    #print(dir(SearchPage))
     count = 3 if SearchPage.total_results > 3 else SearchPage.total_results
     if count == 0:
         await ctx.send(f"no results were found!")
@@ -389,12 +384,15 @@ async def tell_me_about_yourself(ctx: Context):
 async def on_message(message):
     # bot.process_commands(msg) is a couroutine that must be called here since we are overriding the on_message event
     await bot.process_commands(message)
+
+    ctx = await bot.get_context(message)
     if str(message.content).lower().find("tetr.io") != -1:
+        await message.channel.send("Alguém falou em **T E T R I S**?\n⚡⚡⚡!!!Thunder!!!⚡⚡⚡")
         await add_to_playlist(ctx, "https://www.youtube.com/watch?v=bB-d7bc63CE")
-        await message.channel.send("⚡⚡⚡!!!Thunder!!!⚡⚡⚡")
 
     if str(message.content).lower().find("tetris") != -1:
-        await message.channel.send("⚡⚡⚡!!!Thunder!!!⚡⚡⚡")
+        await message.channel.send("Alguém falou em **T E T R I S**?\n⚡⚡⚡!!!Thunder!!!⚡⚡⚡")
+        await add_to_playlist(ctx, "https://www.youtube.com/watch?v=bB-d7bc63CE")
 
     if str(message.content).lower() in ["swear_word1", "swear_word2"]:
         await message.channel.purge(limit=1)
