@@ -292,16 +292,29 @@ async def battle_error(ctx: Context, error):
 async def doilove(ctx: Context):
     if len(ctx.message.mentions) == 0:
         await ctx.send("Yes you do! But WHO is the question... do `!doilove @person`")
-    lovemeter = (69 - (ctx.author.id - ctx.message.mentions[0].id) % 69) % 11
-    rest = 10 - lovemeter
+        return
+    lovemeter = (69 - (ctx.author.id - ctx.message.mentions[0].id) % 69 + 4) % 11
+    red = lovemeter
+    white = 10 - lovemeter
     msg = "["
-    while lovemeter >= 0:
+    while red > 0:
         msg += f"❤️"
-        lovemeter -= 1
-    while rest >= 0:
+        red -= 1
+    while white > 0:
         msg += f"🖤"
-        rest -= 1
+        white -= 1
     msg += "]"
+    lovemeter = int(lovemeter/2)
+    if lovemeter == 0:
+        msg += "\nNope it's just not meant to be 💔!"
+    if lovemeter == 1:
+        msg += "\nYou don't need love, as long as there's a hole"
+    if lovemeter == 2:
+        msg += "\nMaybe with some effort... and dick picks"
+    if lovemeter == 3:
+        msg += "\nAs good as your hand!"
+    if lovemeter == 4:
+        msg += "\nDamn,{ctx.message.mentions[0].id} must give you lots of wet dreams!!"
     await ctx.send(f"<3 Love meter Ɛ> {msg}")
 
 @bot.command()
