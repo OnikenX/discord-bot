@@ -41,7 +41,6 @@ class YTDLSource(discord.PCMVolumeTransformer):
 
     @classmethod
     async def from_url(cls, url, *, loop=None, stream=False):
-
         loop = loop or asyncio.get_event_loop()
         data = await loop.run_in_executor(
             None, lambda: ytdl.extract_info(url, download=not stream)
@@ -53,7 +52,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
         return filename
 
 playlist = []
-
+playlist_status=0
 music_folder = "/tmp/discord-bot/"
 os.system(f"mkdir -p {music_folder}")
 
@@ -83,9 +82,12 @@ ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
 @bot.command(name='next', help='plays next song')
 async def next(ctx: Context):
     '''does a auto next'''
-    playlist.pop(0)
+    await internal_next(ctx)
+
+async def internal_next(ctx :Context):
     if len(playlist) != 0:
         await true_play(ctx, playlist[0])
+
 
 
 async def add_to_playlist(ctx: Context, url):
@@ -100,7 +102,9 @@ async def add_to_playlist(ctx: Context, url):
         return
     playlist.append(url)
     if len(playlist) == 1:
+        playlist_status = 0
         await true_play(ctx, playlist[0])
+
 
 
 async def true_play(ctx: Context, url):
@@ -118,18 +122,17 @@ async def true_play(ctx: Context, url):
             filename = await YTDLSource.from_url(url, loop=bot.loop)
             voice_channel.play(
                 discord.FFmpegPCMAudio(executable="ffmpeg", source=filename),
-                after=next(ctx),
+                after=await internal_next(ctx)
             )
-        print("fiz download e corri")
         await ctx.send(f"**Now playing:** {filename}")
     except Exception as e:
-        await ctx.send(f"Fudeu: {e}")
-
+        err = f"Fudeu: {e}"
+        print(err)
+        await ctx.send(err)
 
 
 @bot.command(name="play", help="To play song")
-async def play(ctx: Context, url):
-    print("lets generic")
+async def play(ctx: Context, *, url):
     await add_to_playlist(ctx, url)
 
 
@@ -197,7 +200,7 @@ async def sus(ctx: Context):
 
 ##########################################################################
 ##########################################################################
-####################### NORMAL BOT STUFF #################################
+######################### TEXT BOT STUFF #################################
 ##########################################################################
 ##########################################################################
 
@@ -269,9 +272,10 @@ async def on_member_join(member):
                 )
             )
 
-        # TODO : Filter out swear words from messages
+##########################################################################
+############################# Battle #####################################
+##########################################################################
 
-################################################################
 @bot.command(name="battle", help="Battle with another user")
 async def battle(ctx: Context):
     if ctx.author.id == ctx.message.mentions[0].id:
@@ -288,18 +292,24 @@ async def battle_error(ctx: Context, error):
     else:
         await ctx.send(f"A batalha fudeu: {error}")
 
+
+##########################################################################
+############################# DOILOVE ####################################
+##########################################################################
+
+
 @bot.command(name="doilove", help="FInd out how compatible are you with another user")
 async def doilove(ctx: Context):
     if len(ctx.message.mentions) == 0:
         await ctx.send("Yes you do! But WHO is the question... do `!doilove @person`")
-    lovemeter = (69 - (ctx.author.id - ctx.message.mentions[0].id) % 69) % 11
+    lovemeter = (69 - (ctx.author.id - ctx.message.mentions[0].id) % 69 + 5) % 11
     rest = 10 - lovemeter
     msg = "["
-    while lovemeter >= 0:
+    while lovemeter > 0:
         msg += f"❤️"
         lovemeter -= 1
-    while rest >= 0:
-        msg += f"🖤"
+    while rest > 0:
+        msg += f"🤍"
         rest -= 1
     msg += "]"
     await ctx.send(f"<3 Love meter Ɛ> {msg}")
@@ -318,6 +328,17 @@ async def on_message(message):
 
     if str(message.content).lower() in ["swear_word1", "swear_word2"]:
         await message.channel.purge(limit=1)
+
+
+##########################################################################
+##########################################################################
+############################# DEBUGGING ##################################
+##########################################################################
+##########################################################################
+
+@bot.command()
+async def test_args(ctx : commands):
+    await ctx.send(f"Mensagem: {ctx}")
 
 
 if __name__ == "__main__":
