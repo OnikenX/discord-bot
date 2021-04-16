@@ -24,6 +24,8 @@ load_dotenv()
 # Get the API token from the .env file.
 DISCORD_TOKEN = os.getenv("discord_token")
 
+music_folder = "/tmp/discord-bot/"
+os.system(f"mkdir -p {music_folder}")
 
 ##########################################################################
 ##########################################################################
@@ -84,6 +86,11 @@ async def next(ctx: Context):
     '''does a auto next'''
     await internal_next(ctx)
 
+@bot.command(name="cona")
+async def cona(ctx : Context):
+    await ctx.send(
+        f"Eu só quero {ctx.author.name} 😳"
+    )
 async def internal_next(ctx :Context):
     if len(playlist) != 0:
         await true_play(ctx, playlist[0])
@@ -98,6 +105,9 @@ async def add_to_playlist(ctx: Context, url):
         ctx.send(f"Fudeu: ErrIntern, url not str, it's {type(url)}")
         return
     if not ctx.message.author.voice:
+        await ctx.send(
+            f"{ctx.message.author.name} is not connected to a voice channel"
+        )
         await ctx.send(f"{ctx.message.author.name} is not connected to a voice channel")
         return
     playlist.append(url)
@@ -125,6 +135,8 @@ async def true_play(ctx: Context, url):
                 after=await internal_next(ctx)
             )
         await ctx.send(f"**Now playing:** {filename}")
+    except:
+        await ctx.send("The bot is not connected to a voice channel.")
     except Exception as e:
         err = f"Fudeu: {e}"
         print(err)
@@ -215,6 +227,9 @@ async def on_ready():
     print("Running!")
     for guild in bot.guilds:
         # for channel in guild.text_channels:
+            # if str(channel) == "general":
+                # await channel.send("Bot Activated..")
+                # await channel.send(file=discord.File("giphy.png"))
         # if str(channel) == "general":
         # await channel.send("Bot Activated..")
         # await channel.send(file=discord.File("giphy.png"))
@@ -222,7 +237,7 @@ async def on_ready():
 
 
 @bot.command(help="Prints details of Author")
-async def whats_my_name(ctx: Context):
+async def whats_my_name(ctx : Context):
     await ctx.send(f"Hello {ctx.author.name}")
 
 
@@ -253,10 +268,7 @@ async def where_am_i(ctx: Context):
     members = []
     async for member in ctx.guild.fetch_members(limit=150):
         await ctx.send(
-            "Name : {}\t Status : {}\n Joined at {}".format(
-                member.display_name, str(member.status), str(member.joined_at)
-            )
-        )
+            f"Name : {member.display_name}\t Status : {str(member.status)}\n Joined at {str(member.joined_at)}")
 
 
 @bot.event
@@ -267,10 +279,7 @@ async def on_member_join(member):
             if member.is_on_mobile() == True:
                 on_mobile = True
             await channel.send(
-                "Welcome to the Server {}!!\n On Mobile : {}".format(
-                    member.name, on_mobile
-                )
-            )
+                f"Welcome to the Server {member.name}!!\n On Mobile : {on_mobile}")
 
 ##########################################################################
 ############################# Battle #####################################
@@ -284,6 +293,19 @@ async def battle(ctx: Context):
     winner = ctx.author.id if random.randint(0, 1) == 0 else ctx.message.mentions[0].id
     await ctx.send(f"<@{winner}> has the biggest dick!!!")
 
+
+@bot.command(name="battle", help="Battle with another user!")
+async def battle(ctx : Context, mention : discord.Member):
+    if ctx.author.name == mention.display_name:
+        msg = "Don't battle yourself, you LONER!"
+    else:
+        i = random.randint(0,1000)
+        if i%2 == 0:
+            msg = f"{ctx.author.name} wins!!!"
+        else:
+            msg = f"{mention.display_name} wins!!!"
+    #msg = "".ctx.author.name
+    await ctx.send(msg)
 
 @battle.error
 async def battle_error(ctx: Context, error):
