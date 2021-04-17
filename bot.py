@@ -1,36 +1,46 @@
 import discord
 import youtube_dl
-from discord.ext import commands, tasks
-from discord.ext.commands import Context
-from dotenv import load_dotenv
-import discord
-import youtube_dl
-from discord.ext import commands, tasks
-from discord.ext.commands import Context
-from dotenv import load_dotenv
-import os
-import random
-
 import asyncio
 import os
 import random
+
+from discord.ext import commands, tasks
+from discord.ext.commands import Context
+from dotenv import load_dotenv
 
 
 intents = discord.Intents.default()
 intents.members = True
 bot = commands.Bot(command_prefix="!", intents=intents)
-client = discord.Client(intents=intents)
+bot.load_extension('nhentai')
+bot.load_extension('debug')
+#bot = discord.Client(intents=intents)
 
 load_dotenv()
-# Get the API token from the .env file.
-DISCORD_TOKEN = os.getenv("discord_token")
+DISCORD_TOKEN = os.getenv("discord_token") # Get the API token from the .env file.
+
+######################################################################
+#############################  SAVE   ################################
+#############################   AND   ################################
+#############################   LOAD  ################################
+######################################################################
+
+#TODO
+
+######################################################################
+#############################  SAFE   ################################
+#############################   FOR   ################################
+#############################   WORK  ################################
+######################################################################
+
+#TODO
 
 
-##########################################################################
-##########################################################################
-################################ AUDIO ###################################
-##########################################################################
-##########################################################################
+######################################################################
+#############################         ################################
+#############################  AUDIO  ################################
+#############################         ################################
+######################################################################
 
 
 class YTDLSource(discord.PCMVolumeTransformer):
@@ -78,9 +88,6 @@ ffmpeg_options = {"options": "-vn"}
 
 ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
 
-
-
-
 @bot.command(name='next', help='plays next song')
 async def next(ctx: Context):
     '''does a auto next'''
@@ -99,6 +106,7 @@ async def add_to_playlist(ctx: Context, url):
     if not ctx.message.author.voice:
         await ctx.send(f"{ctx.message.author.name} is not connected to a voice channel")
         return
+    print(url)
     playlist.append(url)
     if len(playlist) == 1:
         await true_play(ctx, playlist[0])
@@ -184,93 +192,20 @@ async def stop(ctx: Context):
 async def yamete(ctx: Context):
     await add_to_playlist(ctx, "https://www.youtube.com/watch?v=50bnHZLMqTI")
 
-
 @bot.command()
 async def sus(ctx: Context):
     await add_to_playlist(ctx, "https://www.youtube.com/watch?v=grd-K33tOSM")
 
+@bot.command()
+async def thunder(ctx: Context):
+    await add_to_playlist(ctx, "https://www.youtube.com/watch?v=bB-d7bc63CE")
 
+#######################################################################
+#############################          ################################
+#############################  BATTLE  ################################
+#############################          ################################
+#######################################################################
 
-
-##########################################################################
-##########################################################################
-####################### NORMAL BOT STUFF #################################
-##########################################################################
-##########################################################################
-
-
-@bot.command(name="cona")
-async def cona(ctx):
-    await ctx.send(f"Eu só quero {ctx.author.name} 😳")
-
-
-@bot.event
-async def on_ready():
-    print("Running!")
-    for guild in bot.guilds:
-        # for channel in guild.text_channels:
-        # if str(channel) == "general":
-        # await channel.send("Bot Activated..")
-        # await channel.send(file=discord.File("giphy.png"))
-        print(f"Active in {guild.name}\n Member Count : {guild.member_count}")
-
-
-@bot.command(help="Prints details of Author")
-async def whats_my_name(ctx: Context):
-    await ctx.send(f"Hello {ctx.author.name}")
-
-
-
-
-@bot.command(help="Prints details of Server")
-async def where_am_i(ctx: Context):
-    print("Command Issued: where_am_i\n   - message: {}\n   - debug: {}".format(ctx.message.content, ctx.message))
-    owner = str(ctx.guild.owner)
-    region = str(ctx.guild.region)
-    guild_id = str(ctx.guild.id)
-    memberCount = str(ctx.guild.member_count)
-    icon = str(ctx.guild.icon_url)
-    desc = ctx.guild.description
-
-    embed = discord.Embed(
-        title=ctx.guild.name + " Server Information",
-        description=desc,
-        color=discord.Color.blue(),
-    )
-    embed.set_thumbnail(url=icon)
-    embed.add_field(name="Owner", value=owner, inline=True)
-    embed.add_field(name="Server ID", value=guild_id, inline=True)
-    embed.add_field(name="Region", value=region, inline=True)
-    embed.add_field(name="Member Count", value=memberCount, inline=True)
-
-    await ctx.send(embed=embed)
-
-    #Requires Privileged Gateway Intents - Server Members Intent Enabled.
-    #members = []
-    #async for member in ctx.guild.fetch_members(limit=150):
-    #    await ctx.send(
-    #        "Name : {}\t Status : {}\n Joined at {}".format(
-    #            member.display_name, str(member.status), str(member.joined_at)
-    #        )
-    #    )
-
-
-@bot.event
-async def on_member_join(member):
-    for channel in member.guild.text_channels:
-        if str(channel) == "general":
-            on_mobile = False
-            if member.is_on_mobile() == True:
-                on_mobile = True
-            await channel.send(
-                "Welcome to the Server {}!!\n On Mobile : {}".format(
-                    member.name, on_mobile
-                )
-            )
-
-        # TODO : Filter out swear words from messages
-
-################################################################
 @bot.command(name="battle", help="Battle with another user")
 async def battle(ctx: Context):
     print("Command Issued: battle\n   - message: {}\n   - debug: {}".format(ctx.message.content, ctx.message))
@@ -287,6 +222,12 @@ async def battle_error(ctx: Context, error):
         await ctx.send("I could not find that member... do `!battle @adversary`")
     else:
         await ctx.send(f"A batalha fudeu: {error}")
+
+######################################################################
+#############################         ################################
+############################# DOILOVE ################################
+#############################         ################################
+######################################################################
 
 @bot.command(name="doilove", help="FInd out how compatible are you with another user")
 async def doilove(ctx: Context):
@@ -320,65 +261,21 @@ async def doilove(ctx: Context):
         msg += "\nDamn, {} must give you lots of wet dreams!!"
     await ctx.send(msg.format(ctx.message.mentions[0].display_name))
 
-######################################################################
-#############################         ################################
-############################# NHENTAI ################################
-#############################         ################################
-######################################################################
+##########################################################################
+##############################  NORMAL  ##################################
+##############################   BOT    ##################################
+##############################   STUFF  ##################################
+##########################################################################
 
-from NHentai import NHentai
-nhentai = NHentai()
-
-@bot.command(name="nh_find", help="find doujin from nhentai")
-async def nh_find(ctx: Context, arg):
-    print("Command Issued: nh_find\n   - message: {}\n   - debug: {}".format(ctx.message.content, ctx.message))
-    if arg.isnumeric():
-        await nh_display(ctx, arg)
-        return
-    SearchPage = nhentai.search(query=arg, sort='popular', page=1)
-    count = 3 if SearchPage.total_results > 3 else SearchPage.total_results
-    if count == 0:
-        await ctx.send(f"no results were found!")
-        return
-    embeds = []*count
-    i = 0
-    while i < count:
-        await nh_display(ctx, SearchPage.doujins[i].id)
-        i+=1
-
-@bot.command(name="nh_display", help="display doujin from nhentai")
-async def nh_display(ctx: Context, arg):
-    print("Command Issued: nh_display\n   - message: {}\n   - debug: {}".format(ctx.message.content, ctx.message))
-    Doujin = nhentai._get_doujin(id=arg)
-    if Doujin is None:
-        await ctx.send(f"no results were found!")
-        return
-    tags = ""
-    for tag in Doujin.tags:
-        tags += f"{tag} "
-    embed = discord.Embed(
-        title=Doujin.title + " Server Information",
-        description=Doujin.secondary_title,
-        color=discord.Color.gold(),
-        url=f"https://nhentai.net/g/{arg}",
-    )
-    embed.set_image(url=Doujin.images[0])
-    #embed.add_field(name="Sauce", value=f"[nhentai.net/g/{arg}](https://nhentai.net/g/{arg})", inline=True)
-    embed.add_field(name="Tags", value=tags, inline=True)
-    embed.add_field(name="Pages", value=Doujin.total_pages, inline=False)
-    embed.set_footer(text=f"Magic code: {arg}")
-    await ctx.send(embed=embed)
-
-######################################################################
-#############################         ################################
-#############################  DEBUG  ################################
-#############################         ################################
-######################################################################
-
-@bot.command()
-async def tell_me_about_yourself(ctx: Context):
-    text = "My name is OnikenX's pet!\n I was built originally by Kakarot2000. I'm now ~~a slave to OnikenX~~ OnikenX's loyal pet, you can see my services with !help.\n :)"
-    await ctx.send(text)
+@bot.event
+async def on_ready():
+    print("Running!")
+    for guild in bot.guilds:
+        # for channel in guild.text_channels:
+        # if str(channel) == "general":
+        # await channel.send("Bot Activated..")
+        # await channel.send(file=discord.File("giphy.png"))
+        print(f"Active in {guild.name}\n Member Count : {guild.member_count}")
 
 @bot.event
 async def on_message(message):
@@ -386,17 +283,32 @@ async def on_message(message):
     await bot.process_commands(message)
 
     ctx = await bot.get_context(message)
-    if str(message.content).lower().find("tetr.io") != -1:
+    message_string = str(message.content).lower()
+    if message_string.find("tetr.io") != -1 or message_string.find("tetris") != -1:
         await message.channel.send("Alguém falou em **T E T R I S**?\n⚡⚡⚡!!!Thunder!!!⚡⚡⚡")
         await add_to_playlist(ctx, "https://www.youtube.com/watch?v=bB-d7bc63CE")
 
-    if str(message.content).lower().find("tetris") != -1:
-        await message.channel.send("Alguém falou em **T E T R I S**?\n⚡⚡⚡!!!Thunder!!!⚡⚡⚡")
-        await add_to_playlist(ctx, "https://www.youtube.com/watch?v=bB-d7bc63CE")
-
-    if str(message.content).lower() in ["swear_word1", "swear_word2"]:
+    if message_string in ["swear_word1", "swear_word2"]:
         await message.channel.purge(limit=1)
 
+@bot.event
+async def on_member_join(member):
+    for channel in member.guild.text_channels:
+        if str(channel) == "general":
+            on_mobile = False
+            if member.is_on_mobile() == True:
+                on_mobile = True
+            await channel.send(
+                "Welcome to the Server {}!!\n On Mobile : {}".format(
+                    member.name, on_mobile
+                )
+            )
+
+        # TODO : Filter out swear words from messages
+
+@bot.command(name="cona")
+async def cona(ctx):
+    await ctx.send(f"Eu só quero {ctx.author.name} 😳")
 
 if __name__ == "__main__":
     bot.run(DISCORD_TOKEN)
