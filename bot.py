@@ -8,16 +8,20 @@ from discord.ext import commands, tasks
 from discord.ext.commands import Context
 from dotenv import load_dotenv
 
+load_dotenv()
+DISCORD_TOKEN = os.getenv("discord_token") # Get the API token from the .env file.
+PREFIX = os.getenv("command_prefix") # Get the command prefix from the .env file.
+if PREFIX is None:
+    PREFIX = "!" 
+print(f"prefix: {PREFIX}")
 
 intents = discord.Intents.default()
 intents.members = True
-bot = commands.Bot(command_prefix="!", intents=intents)
+bot = commands.Bot(command_prefix=PREFIX, intents=intents)
 bot.load_extension('nhentai')
 bot.load_extension('debug')
 #bot = discord.Client(intents=intents)
 
-load_dotenv()
-DISCORD_TOKEN = os.getenv("discord_token") # Get the API token from the .env file.
 
 ######################################################################
 #############################  SAVE   ################################
@@ -125,7 +129,7 @@ async def true_play(ctx: Context, url):
             print(filename)
             voice_channel.play(
                 discord.FFmpegPCMAudio(executable="ffmpeg", source=filename),
-                #after=next(ctx),
+                after=next(ctx),
             )
         await ctx.send(f"**Now playing:** {filename}")
     except Exception as e:
@@ -195,6 +199,10 @@ async def yamete(ctx: Context):
 @bot.command()
 async def sus(ctx: Context):
     await add_to_playlist(ctx, "https://www.youtube.com/watch?v=grd-K33tOSM")
+
+@bot.command()
+async def jojo(ctx: Context):
+    await add_to_playlist(ctx, "https://www.youtube.com/watch?v=2MtOpB5LlUA")
 
 @bot.command()
 async def thunder(ctx: Context):
