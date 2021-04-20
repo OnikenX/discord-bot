@@ -1,8 +1,6 @@
 import discord
-import youtube_dl
-import asyncio
-import os
 import random
+import os
 
 from discord.ext import commands, tasks
 from discord.ext.commands import Context
@@ -18,8 +16,9 @@ print(f"prefix: {PREFIX}")
 intents = discord.Intents.default()
 intents.members = True
 bot = commands.Bot(command_prefix=PREFIX, intents=intents)
-bot.load_extension('nhentai')
 bot.load_extension('debug')
+#bot.load_extension('audio')
+bot.load_extension('nhentai')
 #bot = discord.Client(intents=intents)
 
 
@@ -207,6 +206,7 @@ async def jojo(ctx: Context):
 @bot.command()
 async def thunder(ctx: Context):
     await add_to_playlist(ctx, "https://www.youtube.com/watch?v=bB-d7bc63CE")
+
 
 #######################################################################
 #############################          ################################
